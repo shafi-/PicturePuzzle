@@ -1,0 +1,6 @@
+1. LED display: 10pcs
+2. 4 Button
+3. ATMega32
+4. DC power source
+5. wire
+6. 
