@@ -1,0 +1,16 @@
+Pin:: 
+  for row - 8 pins
+  for column - 8 pins
+  
+  for dot_matrix_selection - 4 pins 2^4 = 16 pins support
+  for push-button-input - 6 pins ( left, up, right, down, preview, start/stop)
+  
+Total: 26pins 
+
+ROW::PORTB
+COLUMN::PORTD
+
+PUSH_BUTTON::PORTC
+DOT_MATRIX_SELECTION::PORTA-lower
+
+select
