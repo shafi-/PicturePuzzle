@@ -35,7 +35,7 @@ void setup()
 	DDRB = 0x00;
 }
 
-void sendData()
+void sendData(unsigned char data_n)
 {
 	PORTA = DATAREADY;
 	statusA = DATAREADY;
@@ -56,6 +56,15 @@ void sendData()
 	DDRD = 0x00;
 	PORTA = 0x00;
 }
+
+void sendDataTo(int n)
+{
+	for(unsigned char data_n =0 ; data_n < 8; data_n++)
+	{
+		sendData(data_n);		
+	}
+}
+
 int main(void)
 {
 	setup();
@@ -66,7 +75,7 @@ int main(void)
 		while(isSent == 0)
 		{
 			track++;
-			sendData();
+			sendDataTo(1);
 		}
 	}
 }

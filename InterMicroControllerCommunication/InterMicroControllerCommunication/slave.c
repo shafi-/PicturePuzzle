@@ -23,6 +23,7 @@
 unsigned char data = 0x00;
 unsigned char pinAStatus;
 uint64_t track = 0;
+unsigned char data_number;
 
 unsigned char rcvdData[] =
 {
@@ -47,7 +48,7 @@ void setup()
 
 void readData()
 {
-	if((DATAREADY & PINA) == 1)
+	while(data_number < 8)
 	{
 		DDRD = 0x00;
 		PORTB = (PORTB | 0b00000001);
@@ -61,7 +62,8 @@ void readData()
 //		if((DATASENT & PINA) == 1)
 		{
 			PORTB = (PORTB | 0b00000010);
-			rcvdData[0] = PIND;
+			rcvdData[data_number] = PIND;
+			data_number++;
 			PORTC = 0b00000111;
 			PORTB = PIND; 
 			DDRD = 0xff;
@@ -71,9 +73,19 @@ void readData()
 	track++;
 }
 
+void receiveAllData()
+{
+	if((DATAREADY & PINA) == 1)
+	{
+		data_number = 0;
+		readData();
+	}
+}
+
 void writeData()
 {
-	PORTB = rcvdData[0];
+	for(unsigned char k=0; k<8; k++)
+		PORTB = rcvdData[k];
 }
 
 int main(void)
@@ -81,7 +93,7 @@ int main(void)
 	setup();
 	while(1)
 	{
-		readData();
+		receiveAllData();
 		writeData();		
 	}
 	return 0;

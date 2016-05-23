@@ -3,25 +3,27 @@ MasterAVR.elf:     file format elf32-avr
 
 Sections:
 Idx Name          Size      VMA       LMA       File off  Algn
-  0 .text         0000015e  00000000  00000000  00000074  2**1
+  0 .text         00000176  00000000  00000000  00000074  2**1
                   CONTENTS, ALLOC, LOAD, READONLY, CODE
-  1 .bss          0000000b  00800060  00800060  000001d2  2**0
+  1 .bss          0000000b  00800060  00800060  000001ea  2**0
                   ALLOC
-  2 .comment      00000030  00000000  00000000  000001d2  2**0
+  2 .comment      00000030  00000000  00000000  000001ea  2**0
                   CONTENTS, READONLY
-  3 .debug_aranges 00000030  00000000  00000000  00000202  2**0
+  3 .debug_aranges 00000038  00000000  00000000  0000021a  2**0
                   CONTENTS, READONLY, DEBUGGING
-  4 .debug_info   0000011c  00000000  00000000  00000232  2**0
+  4 .debug_info   0000018d  00000000  00000000  00000252  2**0
                   CONTENTS, READONLY, DEBUGGING
-  5 .debug_abbrev 0000008c  00000000  00000000  0000034e  2**0
+  5 .debug_abbrev 0000010d  00000000  00000000  000003df  2**0
                   CONTENTS, READONLY, DEBUGGING
-  6 .debug_line   00000075  00000000  00000000  000003da  2**0
+  6 .debug_line   00000091  00000000  00000000  000004ec  2**0
                   CONTENTS, READONLY, DEBUGGING
-  7 .debug_frame  00000044  00000000  00000000  00000450  2**2
+  7 .debug_frame  0000005c  00000000  00000000  00000580  2**2
                   CONTENTS, READONLY, DEBUGGING
-  8 .debug_str    0000014f  00000000  00000000  00000494  2**0
+  8 .debug_str    00000159  00000000  00000000  000005dc  2**0
                   CONTENTS, READONLY, DEBUGGING
-  9 .debug_ranges 00000020  00000000  00000000  000005e3  2**0
+  9 .debug_loc    00000088  00000000  00000000  00000735  2**0
+                  CONTENTS, READONLY, DEBUGGING
+ 10 .debug_ranges 00000028  00000000  00000000  000007bd  2**0
                   CONTENTS, READONLY, DEBUGGING
 
 Disassembly of section .text:
@@ -61,7 +63,7 @@ Disassembly of section .text:
   60:	10 e0       	ldi	r17, 0x00	; 0
   62:	a0 e6       	ldi	r26, 0x60	; 96
   64:	b0 e0       	ldi	r27, 0x00	; 0
-  66:	ee e5       	ldi	r30, 0x5E	; 94
+  66:	e6 e7       	ldi	r30, 0x76	; 118
   68:	f1 e0       	ldi	r31, 0x01	; 1
   6a:	02 c0       	rjmp	.+4      	; 0x70 <__do_copy_data+0x10>
   6c:	05 90       	lpm	r0, Z+
@@ -83,8 +85,8 @@ Disassembly of section .text:
   80:	ab 36       	cpi	r26, 0x6B	; 107
   82:	b2 07       	cpc	r27, r18
   84:	e1 f7       	brne	.-8      	; 0x7e <.do_clear_bss_loop>
-  86:	0e 94 72 00 	call	0xe4	; 0xe4 <main>
-  8a:	0c 94 ad 00 	jmp	0x15a	; 0x15a <_exit>
+  86:	0e 94 7c 00 	call	0xf8	; 0xf8 <main>
+  8a:	0c 94 b9 00 	jmp	0x172	; 0x172 <_exit>
 
 0000008e <__bad_interrupt>:
   8e:	0c 94 00 00 	jmp	0	; 0x0 <__vectors>
@@ -107,7 +109,7 @@ void setup()
 0000009c <sendData>:
 }
 
-void sendData()
+void sendData(unsigned char data_n)
 {
 	PORTA = DATAREADY;
   9c:	81 e0       	ldi	r24, 0x01	; 1
@@ -122,7 +124,7 @@ void sendData()
   a8:	89 b3       	in	r24, 0x19	; 25
   aa:	80 93 6a 00 	sts	0x006A, r24
 
-void sendData()
+void sendData(unsigned char data_n)
 {
 	PORTA = DATAREADY;
 	statusA = DATAREADY;
@@ -174,67 +176,97 @@ void sendData()
   e0:	1b ba       	out	0x1b, r1	; 27
   e2:	08 95       	ret
 
-000000e4 <main>:
+000000e4 <sendDataTo>:
 }
+
+void sendDataTo(int n)
+{
+  e4:	cf 93       	push	r28
+	for(unsigned char data_n =0 ; data_n < 8; data_n++)
+  e6:	c0 e0       	ldi	r28, 0x00	; 0
+	{
+		sendData(data_n);		
+  e8:	8c 2f       	mov	r24, r28
+  ea:	0e 94 4e 00 	call	0x9c	; 0x9c <sendData>
+	PORTA = 0x00;
+}
+
+void sendDataTo(int n)
+{
+	for(unsigned char data_n =0 ; data_n < 8; data_n++)
+  ee:	cf 5f       	subi	r28, 0xFF	; 255
+  f0:	c8 30       	cpi	r28, 0x08	; 8
+  f2:	d1 f7       	brne	.-12     	; 0xe8 <sendDataTo+0x4>
+	{
+		sendData(data_n);		
+	}
+}
+  f4:	cf 91       	pop	r28
+  f6:	08 95       	ret
+
+000000f8 <main>:
+
 int main(void)
 {
 	setup();
-  e4:	0e 94 49 00 	call	0x92	; 0x92 <setup>
-  e8:	25 c0       	rjmp	.+74     	; 0x134 <main+0x50>
+  f8:	0e 94 49 00 	call	0x92	; 0x92 <setup>
+  fc:	27 c0       	rjmp	.+78     	; 0x14c <main+0x54>
     while(1)
     {
         //TODO:: Please write your application code 
 		while(isSent == 0)
 		{
 			track++;
-  ea:	20 91 60 00 	lds	r18, 0x0060
-  ee:	30 91 61 00 	lds	r19, 0x0061
-  f2:	40 91 62 00 	lds	r20, 0x0062
-  f6:	50 91 63 00 	lds	r21, 0x0063
-  fa:	60 91 64 00 	lds	r22, 0x0064
-  fe:	70 91 65 00 	lds	r23, 0x0065
- 102:	80 91 66 00 	lds	r24, 0x0066
- 106:	90 91 67 00 	lds	r25, 0x0067
- 10a:	a1 e0       	ldi	r26, 0x01	; 1
- 10c:	0e 94 a1 00 	call	0x142	; 0x142 <__adddi3_s8>
- 110:	20 93 60 00 	sts	0x0060, r18
- 114:	30 93 61 00 	sts	0x0061, r19
- 118:	40 93 62 00 	sts	0x0062, r20
- 11c:	50 93 63 00 	sts	0x0063, r21
- 120:	60 93 64 00 	sts	0x0064, r22
- 124:	70 93 65 00 	sts	0x0065, r23
- 128:	80 93 66 00 	sts	0x0066, r24
- 12c:	90 93 67 00 	sts	0x0067, r25
-			sendData();
- 130:	0e 94 4e 00 	call	0x9c	; 0x9c <sendData>
+  fe:	20 91 60 00 	lds	r18, 0x0060
+ 102:	30 91 61 00 	lds	r19, 0x0061
+ 106:	40 91 62 00 	lds	r20, 0x0062
+ 10a:	50 91 63 00 	lds	r21, 0x0063
+ 10e:	60 91 64 00 	lds	r22, 0x0064
+ 112:	70 91 65 00 	lds	r23, 0x0065
+ 116:	80 91 66 00 	lds	r24, 0x0066
+ 11a:	90 91 67 00 	lds	r25, 0x0067
+ 11e:	a1 e0       	ldi	r26, 0x01	; 1
+ 120:	0e 94 ad 00 	call	0x15a	; 0x15a <__adddi3_s8>
+ 124:	20 93 60 00 	sts	0x0060, r18
+ 128:	30 93 61 00 	sts	0x0061, r19
+ 12c:	40 93 62 00 	sts	0x0062, r20
+ 130:	50 93 63 00 	sts	0x0063, r21
+ 134:	60 93 64 00 	sts	0x0064, r22
+ 138:	70 93 65 00 	sts	0x0065, r23
+ 13c:	80 93 66 00 	sts	0x0066, r24
+ 140:	90 93 67 00 	sts	0x0067, r25
+			sendDataTo(1);
+ 144:	81 e0       	ldi	r24, 0x01	; 1
+ 146:	90 e0       	ldi	r25, 0x00	; 0
+ 148:	0e 94 72 00 	call	0xe4	; 0xe4 <sendDataTo>
 	setup();
 //	sendData();
     while(1)
     {
         //TODO:: Please write your application code 
 		while(isSent == 0)
- 134:	80 91 68 00 	lds	r24, 0x0068
- 138:	90 91 69 00 	lds	r25, 0x0069
- 13c:	89 2b       	or	r24, r25
- 13e:	a9 f2       	breq	.-86     	; 0xea <main+0x6>
- 140:	ff cf       	rjmp	.-2      	; 0x140 <main+0x5c>
+ 14c:	80 91 68 00 	lds	r24, 0x0068
+ 150:	90 91 69 00 	lds	r25, 0x0069
+ 154:	89 2b       	or	r24, r25
+ 156:	99 f2       	breq	.-90     	; 0xfe <main+0x6>
+ 158:	ff cf       	rjmp	.-2      	; 0x158 <main+0x60>
 
-00000142 <__adddi3_s8>:
- 142:	00 24       	eor	r0, r0
- 144:	a7 fd       	sbrc	r26, 7
- 146:	00 94       	com	r0
- 148:	2a 0f       	add	r18, r26
- 14a:	30 1d       	adc	r19, r0
- 14c:	40 1d       	adc	r20, r0
- 14e:	50 1d       	adc	r21, r0
- 150:	60 1d       	adc	r22, r0
- 152:	70 1d       	adc	r23, r0
- 154:	80 1d       	adc	r24, r0
- 156:	90 1d       	adc	r25, r0
- 158:	08 95       	ret
+0000015a <__adddi3_s8>:
+ 15a:	00 24       	eor	r0, r0
+ 15c:	a7 fd       	sbrc	r26, 7
+ 15e:	00 94       	com	r0
+ 160:	2a 0f       	add	r18, r26
+ 162:	30 1d       	adc	r19, r0
+ 164:	40 1d       	adc	r20, r0
+ 166:	50 1d       	adc	r21, r0
+ 168:	60 1d       	adc	r22, r0
+ 16a:	70 1d       	adc	r23, r0
+ 16c:	80 1d       	adc	r24, r0
+ 16e:	90 1d       	adc	r25, r0
+ 170:	08 95       	ret
 
-0000015a <_exit>:
- 15a:	f8 94       	cli
+00000172 <_exit>:
+ 172:	f8 94       	cli
 
-0000015c <__stop_program>:
- 15c:	ff cf       	rjmp	.-2      	; 0x15c <__stop_program>
+00000174 <__stop_program>:
+ 174:	ff cf       	rjmp	.-2      	; 0x174 <__stop_program>
